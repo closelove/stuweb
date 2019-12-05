@@ -1,13 +1,19 @@
-import Vue from 'vue' //引入 Vue
-import Vuex from 'vuex' //引入 Vuex
-import user from './modules/user' //引入 user module
+import Vue from 'vue'
+import Vuex from 'vuex'
+import getters from './getters'
+import app from './modules/app'
+import settings from './modules/settings'
+import user from './modules/user'
 
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
     modules: {
-        user //使用 user.js 中的 action
-    }
+        app,
+        settings,
+        user
+    },
+    getters
 })
 
 export default store

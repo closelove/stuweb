@@ -5,7 +5,7 @@
             <el-form :rules="loginFormRules" ref="loginForm" :model="loginForm" label-position="right"
                      label-width="auto"
                      show-message>
-                <span class="login-title">学生管理系统登录</span>
+                <span class="login-title">系统登录</span>
                 <el-form-item prop="username" style="margin-top: 10px">
                     <el-input prefix-icon="el-icon-user" placeholder="请输入用户账号" type="text"
                               v-model="loginForm.username"></el-input>
@@ -24,7 +24,7 @@
 
 <script>
     export default {
-        name: 'login',
+        name: 'Login',
         data() {
             return {
                 loginForm: {
@@ -49,25 +49,18 @@
                 this.$refs.loginForm.validate(valid => {
                     if (valid) {
                         this.loading = true
-                        this.$store
-                            .dispatch('Login', this.loginForm)
+                        this.$store.dispatch('user/login', this.loginForm)
                             .then(response => {
                                 this.loading = false
-                                let code = response.data.code
+                                let code = response.code
                                 if (code === 200) {
-                                    this.$router.push({
-                                        path: '/success',
-                                        query: {data: response.data.data}
-                                    })
+                                    this.$router.push({path: this.redirect || '/'})
+                                    this.loading = false
                                 } else {
-                                  this.$router.push({
-                                    path: '/error',
-                                    query: {data: response.data.message}
-                                  })
-                                /*  this.$message({
-                                    type: 'error',
-                                    message:'mse'
-                                  });*/
+                                    this.$router.push({
+                                        path: '/error',
+                                        query: {data: response.message}
+                                    })
                                 }
                             })
                             .catch(() => {

@@ -1,19 +1,90 @@
-import { login } from "@/api/login"//引入登录 api 接口
+import { login, logout, getInfo } from '@/api/user'
+import { getToken, setToken, removeToken } from '@/utils/auth'
+import { resetRouter } from '@/router'
+import da from "element-ui/src/locale/lang/da";
 
-const user = {
-    actions: {
-        // 登录
-        Login({ commit }, userInfo) { //定义 Login 方法，在组件中使用 this.$store.dispatch("Login") 调用
-            const username = userInfo.username.trim()
-            return new Promise((resolve, reject) => { //封装一个 Promise
-                login(username, userInfo.password).then(response => { //使用 login 接口进行网络请求
-                    commit('') //提交一个 mutation，通知状态改变
-                    resolve(response) //将结果封装进 Promise
-                }).catch(error => {
-                    reject(error)
-                })
-            })
-        },
+const state = {
+    token: getToken(),
+    name: '',
+    avatar: ''
+}
+
+const mutations = {
+    SET_TOKEN: (state, token) => {
+        state.token = token
+    },
+    SET_NAME: (state, name) => {
+        state.name = name
+    },
+    SET_AVATAR: (state, avatar) => {
+        state.avatar = avatar
     }
 }
-export default user
+
+const actions = {
+    login({ commit }, userInfo) {
+        const { username, password } = userInfo
+        return new Promise((resolve, reject) => {
+            login({ username: username.trim(), password: password }).then(response => {
+                // const { data } = response
+                // console.log(response)
+                // commit('SET_TOKEN', data.token)
+                // setToken(data.token)
+                resolve(response)
+            }).catch(error => {
+                reject(error)
+            })
+        })
+    },
+
+    // get user info
+    getInfo({ commit, state }) {
+        return new Promise((resolve, reject) => {
+            getInfo(state.token).then(response => {
+                const { data } = response
+
+                if (!data) {
+                    reject('Verification failed, please Login again.')
+                }
+
+                const { name, avatar } = data
+
+                commit('SET_NAME', name)
+                commit('SET_AVATAR', avatar)
+                resolve(data)
+            }).catch(error => {
+                reject(error)
+            })
+        })
+    },
+
+    // user logout
+    logout({ commit, state }) {
+        return new Promise((resolve, reject) => {
+            logout(state.token).then(() => {
+                commit('SET_TOKEN', '')
+                removeToken()
+                resetRouter()
+                resolve()
+            }).catch(error => {
+                reject(error)
+            })
+        })
+    },
+
+    // remove token
+    resetToken({ commit }) {
+        return new Promise(resolve => {
+            commit('SET_TOKEN', '')
+            removeToken()
+            resolve()
+        })
+    }
+}
+
+export default {
+    namespaced: true,
+    state,
+    mutations,
+    actions
+}
